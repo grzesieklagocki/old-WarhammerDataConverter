@@ -9,7 +9,7 @@ namespace WarhammerDataConverter.DataConverters
 {
     public static class CareerRawConverter
     {
-        private readonly static string[] separators = new string[] { "Main Profile WS BS S T Ag Int WP Fel ", "Secondary Profile A W SB TB M Mag IP FP ", "Skills: ", "Talents: ", "Trappings: ", "Career Entries: ", "Career Exits: ", "Note:	" };
+        private readonly static string[] separators = new string[] { "Main Profile WS BS S T Ag Int WP Fel ", "Secondary Profile A W SB TB M Mag IP FP ", "Skills: ", "Talents: ", "Trappings: ", "Career Entries: ", "Career Exits: ", "Note:" };
 
         public static Career[] GetCareers(string[] lines, char columnSeparator = '\t')
         {
@@ -19,6 +19,11 @@ namespace WarhammerDataConverter.DataConverters
         private enum CareerColumn
         {
             NamePL, Name, IsAdvanced, WhExtension, WS, BS, S, T, Ag, Int, WP, Fel, A, W, SB, TB, M, Mag, IP, FP, Skills, Talents, Trippings, CareerEntries, CareerExits, Description, Note, Races, RAW, RAWDescription
+        }
+
+        private enum CareerRawColumn
+        {
+            NamePL, Name, IsAdvanced, SourceBook, RAWData, Description, Quotation
         }
 
         private enum RawColumn
@@ -38,21 +43,26 @@ namespace WarhammerDataConverter.DataConverters
 
         private static Career CreateCareer(string[] columns)
         {
-            var parameters = columns[(int)CareerColumn.RAW].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var parameters = columns[(int)CareerRawColumn.RAWData].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            if (parameters.Length != 8)
+            {
+                System.Diagnostics.Debug.WriteLine($"{columns[(int)CareerColumn.Name]}: {parameters.Last()}");
+            }
+
             Career career = new Career()
             {
-                Name = columns[(int)CareerColumn.Name],
-                IsAdvanced = bool.Parse(columns[(int)CareerColumn.IsAdvanced]),
-                WhExtension = columns[(int)CareerColumn.WhExtension],
+                Name = columns[(int)CareerRawColumn.Name],
+                IsAdvanced = bool.Parse(columns[(int)CareerRawColumn.IsAdvanced]),
+                SourceBook = columns[(int)CareerRawColumn.SourceBook],
                 Stats = CreateStats(parameters[(int)RawColumn.MainProfile], parameters[(int)RawColumn.SecondaryProfile]),
                 Skills = parameters[(int)RawColumn.Skills],
                 Talents = parameters[(int)RawColumn.Talents],
                 Trippings = parameters[(int)RawColumn.Trappings],
                 CareerEntries = Split(parameters[(int)RawColumn.CareerEntries], ','),
                 CareerExits = Split(parameters[(int)RawColumn.CareerExits], ','),
-                Description = columns[(int)CareerColumn.RAWDescription].Replace("        ", " "),
-                Note = columns[(int)CareerColumn.Note],
-                Races = Split(columns[(int)CareerColumn.Races], ',')
+                Description = columns[(int)CareerRawColumn.Description].Replace("        ", " "),
+                Note = (parameters.Length > (int)RawColumn.Note) ? parameters[(int)RawColumn.Note] : ""
+                //Races = Split(columns[(int)CareerRawColumn.Races], ',')
             };
 
             return career;
@@ -104,7 +114,7 @@ namespace WarhammerDataConverter.DataConverters
             return items;
         }
 
-        public static string FromCareerToTSV(Career[] careers)
+        public static string FromCareersToTSV(Career[] careers)
         {
             string tsv = string.Empty;
 
@@ -122,7 +132,7 @@ namespace WarhammerDataConverter.DataConverters
             return "\t"
                 + $"{career.Name}\t"
                 + $"{career.IsAdvanced}\t"
-                + $"{career.WhExtension}\t"
+                + $"{career.SourceBook}\t"
                 + $"{career.Stats.Main.WS}\t"
                 + $"{career.Stats.Main.BS}\t"
                 + $"{career.Stats.Main.S}\t"
@@ -142,8 +152,8 @@ namespace WarhammerDataConverter.DataConverters
                 + $"{career.Skills}\t"
                 + $"{career.Talents}\t"
                 + $"{career.Trippings}\t"
-                + $"{career.CareerEntries}\t"
-                + $"{career.CareerExits}\t"
+                + $"{string.Join(", ", career.CareerEntries)}\t"
+                + $"{string.Join(", ", career.CareerExits)}\t"
                 + $"{career.Description}\t"
                 + $"{career.Note}"
                 + Environment.NewLine;

@@ -10,7 +10,7 @@ namespace WarhammerDataConverter.Data
     {
         public string Name { get; set; }
         public bool IsAdvanced { get; set; }
-        public string WhExtension { get; set; }
+        public string SourceBook { get; set; }
 
         public Stats Stats { get; set; }
 

@@ -21,8 +21,12 @@ namespace WarhammerDataConverter
 
             var lines = File.ReadAllLines(inputUrl);
 
-            Career[] careers = CareerConverter.GetCareers(lines);
-            File.WriteAllText(outputUrl, JsonConvert.SerializeObject(careers));
+            //Career[] careers = CareerConverter.GetCareers(lines);
+            //File.WriteAllText(outputUrl, JsonConvert.SerializeObject(careers));
+
+            Career[] careers = CareerRawConverter.GetCareers(SkipHeader(lines));
+            File.WriteAllText(outputUrl, CareerRawConverter.FromCareersToTSV(careers));
+
             Console.WriteLine($"Liczba wczytanych profesji: {careers.Length}");
 
             var careerNames = GetAllCareers(careers);
@@ -52,6 +56,11 @@ namespace WarhammerDataConverter
             }
 
             return dictionary.Keys.OrderBy(s => s).ToArray();
+        }
+
+        private static string[] SkipHeader(string[] lines)
+        {
+            return lines.Skip(1).ToArray();
         }
     }
 }

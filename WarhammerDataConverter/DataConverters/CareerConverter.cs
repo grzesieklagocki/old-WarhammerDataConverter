@@ -25,7 +25,7 @@ namespace WarhammerDataConverter.DataConverters
             {
                 Name = parameters[(int)CareerColumns.Name],
                 IsAdvanced = (parameters[(int)CareerColumns.IsAdvanced] == "A"),
-                WhExtension = parameters[(int)CareerColumns.WhExtension],
+                SourceBook = parameters[(int)CareerColumns.WhExtension],
                 Stats = CreateStats(parameters),
                 CareerEntries = Split(parameters[(int)CareerColumns.CareerEntries], ','),
                 CareerExits = Split(parameters[(int)CareerColumns.CareerExits], ','),
